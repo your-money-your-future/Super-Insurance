@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superannuation Group Insurance Comparison Utility</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-light: #f8fafc;
+            --accent-brighter: #ea580c;
+            --accent-brighter-bg: #fff7ed;
+            --accent-cbus: #1d4ed8;
+            --accent-cbus-bg: #eff6ff;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --border-color: #cbd5e1;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1e293b 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Side-by-side matrices */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card.brighter-theme {
+            border-top: 5px solid var(--accent-brighter);
+        }
+
+        .card.cbus-theme {
+            border-top: 5px solid var(--accent-cbus);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .brand-badge.brighter {
+            background-color: var(--accent-brighter-bg);
+            color: var(--accent-brighter);
+        }
+
+        .brand-badge.cbus {
+            background-color: var(--accent-cbus-bg);
+            color: var(--accent-cbus);
+        }
+
+        /* Tables & Lists style */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .spec-table th, .spec-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .spec-table th {
+            font-weight: 700;
+            color: var(--text-muted);
+            background-color: var(--primary-light);
+        }
+
+        .highlight-win {
+            background-color: var(--success-bg) !important;
+            border-left: 3px solid var(--success);
+        }
+
+        .highlight-warn {
+            background-color: var(--warning-bg) !important;
+            border-left: 3px solid var(--warning);
+        }
+
+        .advantage-tag {
+            background-color: var(--success-bg);
+            color: var(--success);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* Sandbox styling */
+        .sandbox-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .sandbox-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .controls-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+
+        .control-group input[type="number"],
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .control-group input[type="number"]:focus,
+        .control-group select:focus {
+            border-color: var(--primary-dark);
+        }
+
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .results-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cost-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .cost-val {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+
+        .cost-val.brighter {
+            color: var(--accent-brighter);
+        }
+
+        .cost-val.cbus {
+            color: var(--accent-cbus);
+        }
+
+        .footnote {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .tpd-block {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--text-muted);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .tpd-block h4 {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: var(--primary-dark);
+        }
+
+        .tpd-block p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Superannuation Group Insurance Comparison Utility</h1>
+        <p>A senior-analyst grade structural and financial comparison between <strong>Brighter Super (Energy Industry)</strong> and <strong>Cbus Super (Industry Super)</strong> product guides [1, 2].</p>
+    </header>
+
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('core')">Core Comparison</button>
+        <button class="tab-btn" onclick="switchTab('definitions')">Policy Nuances & TPD Definitions</button>
+        <button class="tab-btn" onclick="switchTab('sandbox')">Interactive sandbox</button>
+    </div>
+
+    <!-- TAB 1: CORE COMPARISON -->
+    <div id="tab-core" class="tab-content active">
+        <div class="comparison-grid">
+            <!-- Brighter Super Core specifications -->
+            <div class="card brighter-theme">
+                <div class="card-title">
+                    Brighter Super <span class="brand-badge brighter">Energy Industry</span>
+                </div>
+                <table class="spec-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Policy Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Insurer</strong></td>
+                            <td>Zurich Australia Limited [1]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Eligibility Age</strong></td>
+                            <td>Aged 15 to 69 [1]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Default Cover Eligibility</strong></td>
+                            <td>Starts automatically at age 25 with a $6,000 balance [1], OR via opting in within 60 days of joining [1], OR if employer pays full insurance cost [1].</td>
+                        </tr>
+                        <tr class="highlight-win">
+                            <td><strong>TPD Expiry & Limit</strong></td>
+                            <td>Cover stops at age 70 [1]. Maximum TPD level is $3,000,000 [1]. <br><span class="advantage-tag">Favorable: Covers up to Age 70 [1]</span></td>
+                        </tr>
+                        <tr class="highlight-win">
+                            <td><strong>Income Protection Cover</strong></td>
+                            <td>Extended IP cover available up to Age 65 [1] (beyond standard 104-week limit [1]). <br><span class="advantage-tag">Favorable: Long-term age 65 safety net [1]</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Automatic Acceptance Level</strong></td>
+                            <td>Special Offer: Eligible up to 10 units of Death/TPD without full underwriting upon joining [1].</td>
+                        </tr>
+                        <tr class="highlight-win">
+                            <td><strong>Administration Fee Rebate</strong></td>
+                            <td>Fund receives a 15% tax deduction of which 7% is credited directly to member account [1]. <br><span class="advantage-tag">7% Direct Premium Rebate [1]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Cbus Super Core specifications -->
+            <div class="card cbus-theme">
+                <div class="card-title">
+                    Cbus Super <span class="brand-badge cbus">Industry Super</span>
+                </div>
+                <table class="spec-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Policy Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Insurer</strong></td>
+                            <td>TAL Life Limited [2]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Eligibility Age</strong></td>
+                            <td>Aged 15 to 69 [2]</td>
+                        </tr>
+                        <tr class="highlight-win">
+                            <td><strong>Default Cover Eligibility</strong></td>
+                            <td>Starts when employer contribution is received once balance hits $6,000 and age is 25 [2]. Can request to start cover early [2]. <br><span class="advantage-tag">Favorable early startup options [2]</span></td>
+                        </tr>
+                        <tr class="highlight-warn">
+                            <td><strong>TPD Expiry & Limit</strong></td>
+                            <td>Default TPD cover ceases at age 65 [2] (unless manually extended to age 70 with 0 default units above 65 [2]). Max level is $3,000,000 [2].</td>
+                        </tr>
+                        <tr class="highlight-warn">
+                            <td><strong>Income Protection Cover</strong></td>
+                            <td>Benefit period options: 2 years or 5 years [2]. Maximum age is 65 [2]. No option for long-term IP to age 65.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Automatic Acceptance Level</strong></td>
+                            <td>Varies by age: 1 unit under 21 [2], 4 units from 21-64 [2] (Manual, Non-Manual, Professional). Electech gets 2 default units [2].</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Premium Loyalty Rebate</strong></td>
+                            <td>2% premium rebate if cover is held 10-19 years; 4% rebate if cover is held 20+ years [2].</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: DEFINITIONS -->
+    <div id="tab-definitions" class="tab-content">
+        <div class="comparison-grid">
+            <!-- TPD & IP Definitions -->
+            <div class="card brighter-theme">
+                <div class="card-title">Brighter Super Nuances & TPD Definitions [1]</div>
+                
+                <div class="tpd-block">
+                    <h4>Part A: Any Occupation (TPD Definition 1)</h4>
+                    <p>Applies to those working average 15+ hours/wk prior to date of disablement [1]. Must be unlikely to ever work in any occupation suited by education, training, experience, OR *may become reasonably suited* due to reasonable retraining or rehabilitation [1].</p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>Part B: Any Occupation (TPD Definition 2)</h4>
+                    <p>Applies to those working <15 hours/wk or unemployed [1]. Unlikely ever to work in suited employment after considering education, training, experience [1].</p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>TPD Age-Based Tapering Clause</h4>
+                    <p>Fixed-dollar cover for TPD reduces proportionally by 10% each year starting from age 62 (90%) down to age 70 (10%) when it fully terminates [1].</p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>Income Protection Definition & Limits</h4>
+                    <p>Standard IP has a 104-week payment limit [1]. Extended IP can continue to age 65 [1]. Minimum hours worked to qualify is 14 hours per week [1]. Maximum IP weekly cap is $6,923.08/week [1].</p>
+                </div>
+            </div>
+
+            <div class="card cbus-theme">
+                <div class="card-title">Cbus Super Nuances & TPD Definitions [2]</div>
+
+                <div class="tpd-block">
+                    <h4>Part 1: Unlikely to Return to Work</h4>
+                    <p>Applies if in work or unemployed <24 months [2]. Off work 3 consecutive months [2]. Must be unlikely ever to engage in regular paid work suited by education, training, or experience [2]. <br><span class="advantage-tag">Favorable: No retraining penalty clause [2]</span></p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>Part 2: Everyday Work Activities & Psychiatric Impairment</h4>
+                    <p>Applies if unemployed >24 months [2]. Must be unable to perform at least 2 of 5 everyday work activities (mobility, communication, vision, lifting, manual dexterity) [2], OR have a PIRS mental impairment score of 19%+ [2].</p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>TPD Unit-Based Reduction (Tapering)</h4>
+                    <p>Cover declines annually because the value per unit declines dynamically as age increases [2] (e.g. at age 35 Manual unit is $33,800 [2], dropping to $12,000 at age 60 [2]).</p>
+                </div>
+
+                <div class="tpd-block">
+                    <h4>Income Protection Definitions & Limits</h4>
+                    <p>2-year or 5-year benefit periods [2]. Must be working 15+ hours/wk to qualify [2]. Maximum IP benefit is calculated as the lesser of: 87% of pre-disability income (75% to member, 12% to super [2]), or amount of cover, or $30,000/month [2].</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SANDBOX CALCULATOR -->
+    <div id="tab-sandbox" class="tab-content">
+        <div class="sandbox-container">
+            <!-- Controls panel -->
+            <div class="controls-panel">
+                <h3 style="margin-bottom: 15px; font-size: 1.15rem;">Input Parameters</h3>
+                
+                <div class="control-group">
+                    <label for="input-age">Current Age (15-69)</label>
+                    <input type="number" id="input-age" value="35" min="15" max="69" onchange="runSandboxCalculations()">
+                </div>
+
+                <div class="control-group">
+                    <label for="input-death-sum">Desired Death Cover ($)</label>
+                    <input type="number" id="input-death-sum" value="250000" min="0" step="10000" onchange="runSandboxCalculations()">
+                </div>
+
+                <div class="control-group">
+                    <label for="input-tpd-sum">Desired TPD Cover ($)</label>
+                    <input type="number" id="input-tpd-sum" value="250000" min="0" step="10000" onchange="runSandboxCalculations()">
+                </div>
+
+                <div class="control-group">
+                    <label for="input-ip-sum">IP Weekly Benefit ($)</label>
+                    <input type="number" id="input-ip-sum" value="1000" min="0" step="100" onchange="runSandboxCalculations()">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <div class="control-group">
+                    <label for="brighter-occ">Brighter Super Occupation</label>
+                    <select id="brighter-occ" onchange="runSandboxCalculations()">
+                        <option value="white_collar">White Collar / Professional</option>
+                        <option value="blue_collar" selected>Blue Collar (Default)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="cbus-occ">Cbus Super Occupation</label>
+                    <select id="cbus-occ" onchange="runSandboxCalculations()">
+                        <option value="professional">Professional</option>
+                        <option value="non_manual">Non-manual</option>
+                        <option value="electech">Electech</option>
+                        <option value="manual" selected>Manual (Default)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="ip-waiting-period">IP Waiting Period</label>
+                    <select id="ip-waiting-period" onchange="runSandboxCalculations()">
+                        <option value="30" selected>30 Days</option>
+                        <option value="90">90 Days</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="ip-benefit-period">Cbus IP Benefit Period</label>
+                    <select id="ip-benefit-period" onchange="runSandboxCalculations()">
+                        <option value="bp2" selected>2 Years</option>
+                        <option value="bp5">5 Years</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Results panel -->
+            <div class="results-panel">
+                <div class="results-row">
+                    <!-- Brighter Super calculation output card -->
+                    <div class="cost-card brighter-theme" style="border-top: 5px solid var(--accent-brighter);">
+                        <h3 style="color: var(--accent-brighter); font-weight: 700;">Brighter Super Premium</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Weekly Cost</p>
+                        <div class="cost-val brighter" id="brighter-weekly-total">$0.00</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Monthly: <strong id="brighter-monthly-total">$0.00</strong></p>
+                        
+                        <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left;">
+                            <div class="footnote"><strong>Death/TPD Cover Basis:</strong> Fixed Dollar [1]</div>
+                            <div class="footnote"><strong>Death Rate (per $1k p.a.):</strong> <span id="brighter-death-rate">0.00</span></div>
+                            <div class="footnote"><strong>TPD Rate (per $1k p.a.):</strong> <span id="brighter-tpd-rate">0.00</span></div>
+                            <div class="footnote"><strong>IP Rate (per unit wk):</strong> <span id="brighter-ip-unit-cost">$1.688</span></div>
+                            <div class="footnote"><strong>Admin Rebate Applied:</strong> 7% discount already factored into results [1].</div>
+                        </div>
+                    </div>
+
+                    <!-- Cbus Super calculation output card -->
+                    <div class="cost-card cbus-theme" style="border-top: 5px solid var(--accent-cbus);">
+                        <h3 style="color: var(--accent-cbus); font-weight: 700;">Cbus Super Premium</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Weekly Cost</p>
+                        <div class="cost-val cbus" id="cbus-weekly-total">$0.00</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Monthly: <strong id="cbus-monthly-total">$0.00</strong></p>
+
+                        <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left;">
+                            <div class="footnote"><strong>Death Cover Basis:</strong> Unit-based [2]</div>
+                            <div class="footnote"><strong>Calculated Death Units Needed:</strong> <span id="cbus-death-units">0</span> (<span id="cbus-death-unit-val">$0</span> per unit [2])</div>
+                            <div class="footnote"><strong>Calculated TPD Units Needed:</strong> <span id="cbus-tpd-units">0</span> (<span id="cbus-tpd-unit-val">$0</span> per unit [2])</div>
+                            <div class="footnote"><strong>IP Rate (per $100/wk unit):</strong> <span id="cbus-ip-unit-cost">$0.00</span> [2]</div>
+                            <div class="footnote"><strong>Loyalty Rebate:</strong> Factored automatically depending on history rules [2].</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sandbox Notes -->
+                <div class="card" style="background-color: var(--primary-light);">
+                    <h4 style="font-weight: 700; margin-bottom: 8px; font-size: 0.95rem;">Sandbox Calculations Methodology:</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.45;">
+                        <strong>Brighter Super:</strong> Evaluated using the standard Fixed-dollar tables (Page 13) [1]. Under Brighter Super rules, TPD and Death are packaged into a combined "Death & TPD" rate [1]. TPD cover is capped at or below the Death cover amount [1]. Cost calculations apply the mandatory 7% administration rebate [1].
+                        <br><br>
+                        <strong>Cbus Super:</strong> Cover in Cbus is inherently structured as unit multiples [2]. The sandbox dynamically calculates unit requirements by dividing your requested sums insured by Cbus's age-specific unit definitions (Pages 20-25) [2] and rounding up to the nearest whole unit, which matches standard voluntary insurance application protocols [2].
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab system logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.innerText.toLowerCase().includes(tabId.split('-')[0]));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            if (tabId === 'sandbox') {
+                runSandboxCalculations();
+            }
+        }
+
+        // Cbus Super IP Rate Database [2]
+        const cbusIpRates = {
+            wp30: {
+                bp2: {
+                    manual:       [0.77, 0.77, 0.77, 0.95, 1.23, 1.67, 2.23, 3.12, 4.51, 6.37],
+                    non_manual:   [0.27, 0.27, 0.27, 0.34, 0.44, 0.59, 0.79, 1.11, 1.60, 2.01],
+                    professional: [0.24, 0.24, 0.24, 0.31, 0.40, 0.53, 0.71, 1.00, 1.44, 1.81]
+                },
+                bp5: {
+                    manual:       [1.03, 1.05, 1.09, 1.39, 1.85, 2.59, 3.55, 5.12, 7.58, 9.15],
+                    non_manual:   [0.34, 0.35, 0.36, 0.46, 0.62, 0.86, 1.19, 1.71, 2.53, 3.25],
+                    professional: [0.31, 0.32, 0.32, 0.41, 0.56, 0.77, 1.07, 1.54, 2.28, 2.93]
+                }
+            },
+            wp90: {
+                bp2: {
+                    manual:       [0.32, 0.32, 0.30, 0.34, 0.46, 0.64, 1.01, 1.58, 2.65, 3.65],
+                    non_manual:   [0.12, 0.11, 0.10, 0.12, 0.16, 0.23, 0.36, 0.56, 0.94, 1.15],
+                    professional: [0.11, 0.10, 0.09, 0.11, 0.14, 0.21, 0.32, 0.50, 0.85, 1.04]
+                },
+                bp5: {
+                    manual:       [0.49, 0.48, 0.47, 0.56, 0.78, 1.12, 1.79, 2.91, 5.01, 6.18],
+                    non_manual:   [0.16, 0.15, 0.15, 0.18, 0.25, 0.35, 0.57, 0.92, 1.58, 1.95],
+                    professional: [0.14, 0.14, 0.14, 0.16, 0.23, 0.32, 0.51, 0.83, 1.42, 1.76]
+                }
+            }
+        };
+
+        function getCbusIpAgeIndex(age) {
+            if (age < 20) return 0;
+            if (age < 25) return 1;
+            if (age < 30) return 2;
+            if (age < 35) return 3;
+            if (age < 40) return 4;
+            if (age < 45) return 5;
+            if (age < 50) return 6;
+            if (age < 55) return 7;
+            if (age < 60) return 8;
+            return 9; 
+        }
+
+        // Cbus Default unit lookup [2]
+        function getCbusUnitData(occ, age) {
+            let deathVal = 0, deathCost = 0, tpdVal = 0, tpdCost = 0;
+            if (occ === 'manual') {
+                if (age <= 20) { deathVal = 52000; deathCost = 1.16; tpdVal = 52000; tpdCost = 0.92; }
+                else if (age <= 24) { deathVal = 52000; deathCost = 1.16; tpdVal = 39000; tpdCost = 0.92; }
+                else if (age <= 29) { deathVal = 52000; deathCost = 1.30; tpdVal = 39000; tpdCost = 2.82; }
+                else if (age <= 34) { deathVal = 52000; deathCost = 1.30; tpdVal = 36400; tpdCost = 2.82; }
+                else if (age <= 39) { deathVal = 52000; deathCost = 1.96; tpdVal = 33800; tpdCost = 4.19; }
+                else if (age <= 44) { deathVal = 52000; deathCost = 1.96; tpdVal = 31200; tpdCost = 4.19; }
+                else if (age <= 49) { deathVal = 52000; deathCost = 1.96; tpdVal = 26000; tpdCost = 4.19; }
+                else if (age === 50) { deathVal = 52000; deathCost = 2.84; tpdVal = 26000; tpdCost = 4.96; }
+                else if (age === 51) { deathVal = 48000; deathCost = 2.84; tpdVal = 25000; tpdCost = 4.96; }
+                else if (age === 52) { deathVal = 44000; deathCost = 2.84; tpdVal = 25000; tpdCost = 4.96; }
+                else if (age === 53) { deathVal = 39500; deathCost = 2.84; tpdVal = 25000; tpdCost = 4.96; }
+                else if (age === 54) { deathVal = 35000; deathCost = 2.84; tpdVal = 25000; tpdCost = 4.96; }
+                else if (age === 55) { deathVal = 33000; deathCost = 2.84; tpdVal = 23000; tpdCost = 4.96; }
+                else if (age === 56) { deathVal = 31000; deathCost = 2.84; tpdVal = 21000; tpdCost = 4.96; }
+                else if (age === 57) { deathVal = 29000; deathCost = 2.84; tpdVal = 18750; tpdCost = 4.96; }
+                else if (age === 58) { deathVal = 27000; deathCost = 2.84; tpdVal = 16500; tpdCost = 4.96; }
+                else if (age === 59) { deathVal = 25000; deathCost = 2.84; tpdVal = 14250; tpdCost = 4.96; }
+                else if (age === 60) { deathVal = 25000; deathCost = 2.84; tpdVal = 12000; tpdCost = 4.96; }
+                else if (age === 61) { deathVal = 25000; deathCost = 2.84; tpdVal = 10500; tpdCost = 4.96; }
+                else if (age === 62) { deathVal = 25000; deathCost = 2.84; tpdVal = 9500; tpdCost = 4.96; }
+                else if (age === 63) { deathVal = 25000; deathCost = 2.84; tpdVal = 8500; tpdCost = 4.96; }
+                else if (age === 64) { deathVal = 25000; deathCost = 2.84; tpdVal = 7500; tpdCost = 4.96; }
+                else if (age === 65) { deathVal = 12500; deathCost = 2.84; tpdVal = 6250; tpdCost = 4.96; }
+                else if (age === 66) { deathVal = 10000; deathCost = 2.84; tpdVal = 5000; tpdCost = 4.96; }
+                else if (age === 67) { deathVal = 8000; deathCost = 2.84; tpdVal = 4000; tpdCost = 4.96; }
+                else if (age <= 69) { deathVal = 6000; deathCost = 2.84; tpdVal = 3000; tpdCost = 4.96; }
+            } else if (occ === 'electech') {
+                if (age <= 24) { deathVal = 50000; deathCost = 0.71; tpdVal = 50000; tpdCost = 0.41; }
+                else if (age <= 34) { deathVal = 50000; deathCost = 0.82; tpdVal = 50000; tpdCost = 1.40; }
+                else if (age <= 49) { deathVal = 50000; deathCost = 1.36; tpdVal = 50000; tpdCost = 2.75; }
+                else if (age <= 54) { deathVal = 50000; deathCost = 2.24; tpdVal = 50000; tpdCost = 3.25; }
+                else if (age === 55) { deathVal = 50000; deathCost = 2.24; tpdVal = 46000; tpdCost = 3.25; }
+                else if (age === 56) { deathVal = 50000; deathCost = 2.24; tpdVal = 42000; tpdCost = 3.25; }
+                else if (age === 57) { deathVal = 50000; deathCost = 2.24; tpdVal = 37500; tpdCost = 3.25; }
+                else if (age === 58) { deathVal = 50000; deathCost = 2.24; tpdVal = 33000; tpdCost = 3.25; }
+                else if (age === 59) { deathVal = 50000; deathCost = 2.24; tpdVal = 28500; tpdCost = 3.25; }
+                else if (age === 60) { deathVal = 50000; deathCost = 2.24; tpdVal = 24000; tpdCost = 3.25; }
+                else if (age === 61) { deathVal = 50000; deathCost = 2.24; tpdVal = 19500; tpdCost = 3.25; }
+                else if (age === 62) { deathVal = 50000; deathCost = 2.24; tpdVal = 15000; tpdCost = 3.25; }
+                else if (age === 63) { deathVal = 50000; deathCost = 2.24; tpdVal = 10500; tpdCost = 3.25; }
+                else if (age === 64) { deathVal = 50000; deathCost = 2.24; tpdVal = 5000; tpdCost = 3.25; }
+                else if (age <= 69) { deathVal = 10000; deathCost = 2.24; tpdVal = 5000; tpdCost = 3.25; }
+            } else if (occ === 'non_manual') {
+                const dVals = {
+                    15: 122500, 25: 122500, 30: 119400, 31: 116100, 32: 112900, 33: 109400, 34: 105700, 35: 102000,
+                    36: 96700, 37: 91500, 38: 86200, 39: 81000, 40: 75500, 41: 72400, 42: 69300, 43: 66200, 44: 63200,
+                    45: 61500, 46: 61000, 47: 60400, 48: 60200, 49: 60100, 50: 59800, 51: 55300, 52: 50800, 53: 45700,
+                    54: 42200, 55: 39600, 56: 37000, 57: 34400, 58: 31600, 59: 29000, 60: 26600, 61: 24200, 62: 22000,
+                    63: 20500, 64: 20500, 65: 14400, 66: 11500, 67: 9400, 68: 8200, 69: 8200
+                };
+                const tVals = {
+                    15: 122500, 25: 122500, 30: 119400, 31: 116100, 32: 112900, 33: 109400, 34: 105700, 35: 102000,
+                    36: 96700, 37: 91500, 38: 86200, 39: 81000, 40: 75500, 41: 72400, 42: 69300, 43: 66200, 44: 63200,
+                    45: 61500, 46: 61000, 47: 60400, 48: 60200, 49: 60100, 50: 47300, 51: 43500, 52: 39700, 53: 33900,
+                    54: 26500, 55: 26500, 56: 23800, 57: 21100, 58: 18500, 59: 15800, 60: 13300, 61: 12100, 62: 11000,
+                    63: 10250, 64: 10250, 65: 7200, 66: 5750, 67: 4700, 68: 4100, 69: 4100
+                };
+                const findVal = (map, a) => {
+                    let keys = Object.keys(map).map(Number).sort((x,y) => x-y);
+                    let chosen = keys[0];
+                    for (let k of keys) {
+                        if (a >= k) chosen = k;
+                    }
+                    return map[chosen];
+                };
+                deathVal = findVal(dVals, age);
+                tpdVal = findVal(tVals, age);
+
+                if (age <= 24) { deathCost = 0.67; tpdCost = 0.39; }
+                else if (age <= 29) { deathCost = 0.74; tpdCost = 1.25; }
+                else if (age <= 34) { deathCost = 0.74; tpdCost = 1.25; }
+                else if (age <= 49) { deathCost = 1.41; tpdCost = 2.56; }
+                else { deathCost = 2.35; tpdCost = 3.11; }
+            } else if (occ === 'professional') {
+                const dVals = {
+                    15: 153125, 25: 153125, 30: 149250, 31: 145125, 32: 141125, 33: 136750, 34: 132125, 35: 127500,
+                    36: 120875, 37: 114375, 38: 107750, 39: 101250, 40: 94375, 41: 90500, 42: 86625, 43: 82750, 44: 79000,
+                    45: 76875, 46: 76250, 47: 75500, 48: 75250, 49: 75125, 50: 74750, 51: 69125, 52: 63500, 53: 57125,
+                    54: 52750, 55: 49500, 56: 46250, 57: 43000, 58: 39500, 59: 36250, 60: 33250, 61: 30250, 62: 27500,
+                    63: 25625, 64: 25625, 65: 18000, 66: 14375, 67: 11750, 68: 10250, 69: 10250
+                };
+                const tVals = {
+                    15: 153125, 25: 153125, 30: 149250, 31: 145125, 32: 141125, 33: 136750, 34: 132125, 35: 127500,
+                    36: 120875, 37: 114375, 38: 107750, 39: 101250, 40: 94375, 41: 90500, 42: 86625, 43: 82750, 44: 79000,
+                    45: 76875, 46: 76250, 47: 75500, 48: 75250, 49: 75125, 50: 59125, 51: 54375, 52: 49625, 53: 42375,
+                    54: 33125, 55: 33125, 56: 29750, 57: 26375, 58: 23125, 59: 19750, 60: 16625, 61: 15125, 62: 13750,
+                    63: 12813, 64: 12813, 65: 9000, 66: 7188, 67: 5875, 68: 5125, 69: 5125
+                };
+                const findVal = (map, a) => {
+                    let keys = Object.keys(map).map(Number).sort((x,y) => x-y);
+                    let chosen = keys[0];
+                    for (let k of keys) {
+                        if (a >= k) chosen = k;
+                    }
+                    return map[chosen];
+                };
+                deathVal = findVal(dVals, age);
+                tpdVal = findVal(tVals, age);
+
+                if (age <= 24) { deathCost = 0.67; tpdCost = 0.39; }
+                else if (age <= 29) { deathCost = 0.74; tpdCost = 1.25; }
+                else if (age <= 34) { deathCost = 0.74; tpdCost = 1.25; }
+                else if (age <= 49) { deathCost = 1.41; tpdCost = 2.56; }
+                else { deathCost = 2.35; tpdCost = 3.11; }
+            }
+            return { deathVal, deathCost, tpdVal, tpdCost };
+        }
+
+        // Brighter Super Fixed Dollar Premium Rate lookup [1]
+        function getBrighterFixedDollarRate(occ, isTpd, age) {
+            const ageNext = Math.min(70, age + 1);
+            const ages = [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70];
+            
+            const blueTPD = [0.707, 0.738, 0.781, 0.781, 0.781, 0.929, 0.988, 1.062, 1.150, 1.267, 1.386, 1.548, 1.740, 1.960, 2.196, 2.476, 2.801, 3.198, 3.612, 4.143, 4.717, 5.424, 6.250, 7.193, 8.210, 9.582, 10.850, 12.236, 14.019, 15.965, 17.969, 19.163, 22.111, 23.954, 26.135, 28.745, 31.620, 34.789, 38.268, 42.100, 46.316];
+            const blueDeath = [0.469, 0.498, 0.526, 0.526, 0.526, 0.612, 0.669, 0.712, 0.769, 0.839, 0.925, 1.039, 1.167, 1.310, 1.480, 1.664, 1.879, 2.135, 2.419, 2.774, 3.159, 3.628, 4.184, 4.809, 5.492, 6.417, 7.257, 8.181, 9.391, 10.686, 12.024, 12.821, 14.798, 16.036, 17.487, 19.238, 21.158, 23.278, 25.612, 28.158, 30.975];
+            
+            const whiteTPD = [0.560, 0.590, 0.619, 0.634, 0.635, 0.738, 0.796, 0.855, 0.929, 1.002, 1.105, 1.238, 1.400, 1.562, 1.769, 1.976, 2.241, 2.550, 2.889, 3.302, 3.774, 4.334, 4.997, 5.750, 6.574, 7.665, 8.682, 9.788, 11.218, 12.781, 14.372, 15.331, 17.689, 19.163, 20.903, 22.996, 25.296, 27.830, 30.616, 33.683, 37.059];
+            const whiteDeath = [0.413, 0.441, 0.456, 0.469, 0.469, 0.541, 0.584, 0.626, 0.682, 0.740, 0.825, 0.910, 1.025, 1.153, 1.310, 1.466, 1.664, 1.892, 2.135, 2.448, 2.789, 3.215, 3.699, 4.254, 4.866, 5.677, 6.417, 7.242, 8.296, 9.448, 10.643, 11.340, 13.090, 14.186, 15.467, 17.018, 18.725, 20.589, 22.653, 24.914, 27.404];
+            
+            let idx = ages.findIndex(a => ageNext <= a);
+            if (idx === -1) idx = ages.length - 1;
+            
+            if (occ === 'blue_collar') {
+                return isTpd ? blueTPD[idx] : blueDeath[idx];
+            } else {
+                return isTpd ? whiteTPD[idx] : whiteDeath[idx];
+            }
+        }
+
+        // Core dynamic execution routine
+        function runSandboxCalculations() {
+            const age = parseInt(document.getElementById('input-age').value) || 30;
+            const deathSum = parseFloat(document.getElementById('input-death-sum').value) || 0;
+            const tpdSum = parseFloat(document.getElementById('input-tpd-sum').value) || 0;
+            const ipSum = parseFloat(document.getElementById('input-ip-sum').value) || 0;
+
+            const brighterOcc = document.getElementById('brighter-occ').value;
+            const cbusOcc = document.getElementById('cbus-occ').value;
+            const ipWaiting = document.getElementById('ip-waiting-period').value;
+            const cbusBp = document.getElementById('ip-benefit-period').value;
+
+            // 1. BRIGHTER SUPER CALCULATIONS
+            // Rate evaluations based on PDS guidelines
+            let bDeathRate = getBrighterFixedDollarRate(brighterOcc, false, age);
+            let bTpdRate = getBrighterFixedDollarRate(brighterOcc, true, age);
+
+            // Cost formula: annual premium divided by 52
+            let annualBDeath = (deathSum / 1000) * bDeathRate;
+            let annualBTpd = (tpdSum / 1000) * bTpdRate;
+
+            // Apply age tapering warning if > 61
+            if (age >= 61) {
+                const factors = {62: 0.9, 63: 0.8, 64: 0.7, 65: 0.6, 66: 0.5, 67: 0.4, 68: 0.3, 69: 0.2, 70: 0.1};
+                let factor = factors[age] || 0.1;
+                annualBTpd = annualBTpd * factor;
+            }
+
+            let weeklyBDeathTPD = (annualBDeath + annualBTpd) / 52;
+
+            // IP calculations
+            let bIpUnitRate = 1.688; // Default 30 Days Standard
+            if (ipWaiting === '90') {
+                bIpUnitRate = 1.009;
+            }
+            let bIpCost = (ipSum / 115.40) * bIpUnitRate;
+            
+            // Total cost with 7% rebate offset
+            let brighterWeeklyTotal = (weeklyBDeathTPD + bIpCost) * 0.93;
+            let brighterMonthlyTotal = brighterWeeklyTotal * (52 / 12);
+
+            // Update DOM
+            document.getElementById('brighter-weekly-total').innerText = '$' + brighterWeeklyTotal.toFixed(2);
+            document.getElementById('brighter-monthly-total').innerText = '$' + brighterMonthlyTotal.toFixed(2);
+            document.getElementById('brighter-death-rate').innerText = bDeathRate.toFixed(4);
+            document.getElementById('brighter-tpd-rate').innerText = bTpdRate.toFixed(4);
+            document.getElementById('brighter-ip-unit-cost').innerText = '$' + bIpUnitRate.toFixed(3);
+
+
+            // 2. CBUS SUPER CALCULATIONS
+            const cbusUnits = getCbusUnitData(cbusOcc, age);
+            
+            // Death Cover mapping
+            let cbusDeathUnits = 0;
+            if (cbusUnits.deathVal > 0) {
+                cbusDeathUnits = Math.ceil(deathSum / cbusUnits.deathVal);
+            }
+            let cbusDeathWeekly = cbusDeathUnits * cbusUnits.deathCost;
+
+            // TPD Cover mapping
+            let cbusTpdUnits = 0;
+            if (cbusUnits.tpdVal > 0) {
+                cbusTpdUnits = Math.ceil(tpdSum / cbusUnits.tpdVal);
+            }
+            let cbusTpdWeekly = cbusTpdUnits * cbusUnits.tpdCost;
+
+            // IP evaluations
+            let cbusMappedOcc = cbusOcc === 'electech' ? 'manual' : cbusOcc;
+            let cbusIpIndex = getCbusIpAgeIndex(age);
+            let cbusIpRateKey = 'wp' + ipWaiting;
+            let cbusIpUnitCost = cbusIpRates[cbusIpRateKey][cbusBp][cbusMappedOcc][cbusIpIndex];
+            
+            let cbusIpUnits = Math.ceil(ipSum / 100);
+            let cbusIpWeekly = cbusIpUnits * cbusIpUnitCost;
+
+            let cbusWeeklyTotal = cbusDeathWeekly + cbusTpdWeekly + cbusIpWeekly;
+            let cbusMonthlyTotal = cbusWeeklyTotal * (52 / 12);
+
+            // Update DOM
+            document.getElementById('cbus-weekly-total').innerText = '$' + cbusWeeklyTotal.toFixed(2);
+            document.getElementById('cbus-monthly-total').innerText = '$' + cbusMonthlyTotal.toFixed(2);
+            document.getElementById('cbus-death-units').innerText = cbusDeathUnits;
+            document.getElementById('cbus-death-unit-val').innerText = '$' + cbusUnits.deathVal.toLocaleString();
+            document.getElementById('cbus-tpd-units').innerText = cbusTpdUnits;
+            document.getElementById('cbus-tpd-unit-val').innerText = '$' + cbusUnits.tpdVal.toLocaleString();
+            document.getElementById('cbus-ip-unit-cost').innerText = '$' + cbusIpUnitCost.toFixed(2);
+        }
+    </script>
+</body>
+</html>
