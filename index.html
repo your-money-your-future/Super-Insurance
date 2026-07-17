@@ -16,6 +16,8 @@
             --success-bg: #ecfdf5;
             --warning: #f59e0b;
             --warning-bg: #fef3c7;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
             --border-color: #cbd5e1;
             --text-dark: #1e293b;
             --text-muted: #64748b;
@@ -240,6 +242,12 @@
             border-color: var(--primary-dark);
         }
 
+        .control-group input[disabled] {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
         .results-panel {
             display: flex;
             flex-direction: column;
@@ -268,7 +276,7 @@
         }
 
         .cost-val {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 800;
             margin: 10px 0;
         }
@@ -306,6 +314,28 @@
             font-size: 0.85rem;
             color: var(--text-muted);
         }
+
+        .badge-alert {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .eql-notice {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.82rem;
+            color: #b45309;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -318,7 +348,7 @@
     <div class="tabs-nav">
         <button class="tab-btn active" onclick="switchTab('core')">Core Comparison</button>
         <button class="tab-btn" onclick="switchTab('definitions')">Policy Nuances & TPD Definitions</button>
-        <button class="tab-btn" onclick="switchTab('sandbox')">Interactive sandbox</button>
+        <button class="tab-btn" onclick="switchTab('sandbox')">Interactive Sandbox</button>
     </div>
 
     <!-- TAB 1: CORE COMPARISON -->
@@ -406,9 +436,9 @@
                             <td><strong>Automatic Acceptance Level</strong></td>
                             <td>Varies by age: 1 unit under 21 [2], 4 units from 21-64 [2] (Manual, Non-Manual, Professional). Electech gets 2 default units [2].</td>
                         </tr>
-                        <tr>
+                        <tr class="highlight-win">
                             <td><strong>Premium Loyalty Rebate</strong></td>
-                            <td>2% premium rebate if cover is held 10-19 years; 4% rebate if cover is held 20+ years [2].</td>
+                            <td>2% premium rebate if cover is held 10-19 years; 4% rebate if cover is held 20+ years [2]. <br><span class="advantage-tag">Loyalty premium discounts applied by length of cover [2]</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -430,7 +460,7 @@
 
                 <div class="tpd-block">
                     <h4>Part B: Any Occupation (TPD Definition 2)</h4>
-                    <p>Applies to those working <15 hours/wk or unemployed [1]. Unlikely ever to work in suited employment after considering education, training, experience [1].</p>
+                    <p>Applies to those working &lt;15 hours/wk or unemployed [1]. Unlikely ever to work in suited employment after considering education, training, experience [1].</p>
                 </div>
 
                 <div class="tpd-block">
@@ -449,12 +479,12 @@
 
                 <div class="tpd-block">
                     <h4>Part 1: Unlikely to Return to Work</h4>
-                    <p>Applies if in work or unemployed <24 months [2]. Off work 3 consecutive months [2]. Must be unlikely ever to engage in regular paid work suited by education, training, or experience [2]. <br><span class="advantage-tag">Favorable: No retraining penalty clause [2]</span></p>
+                    <p>Applies if in work or unemployed &lt;24 months [2]. Off work 3 consecutive months [2]. Must be unlikely ever to engage in regular paid work suited by education, training, or experience [2]. <br><span class="advantage-tag">Favorable: No retraining penalty clause [2]</span></p>
                 </div>
 
                 <div class="tpd-block">
                     <h4>Part 2: Everyday Work Activities & Psychiatric Impairment</h4>
-                    <p>Applies if unemployed >24 months [2]. Must be unable to perform at least 2 of 5 everyday work activities (mobility, communication, vision, lifting, manual dexterity) [2], OR have a PIRS mental impairment score of 19%+ [2].</p>
+                    <p>Applies if unemployed &gt;24 months [2]. Must be unable to perform at least 2 of 5 everyday work activities (mobility, communication, vision, lifting, manual dexterity) [2], OR have a PIRS mental impairment score of 19%+ [2].</p>
                 </div>
 
                 <div class="tpd-block">
@@ -477,17 +507,46 @@
             <div class="controls-panel">
                 <h3 style="margin-bottom: 15px; font-size: 1.15rem;">Input Parameters</h3>
                 
+                <div class="eql-notice">
+                    <strong>Plan Rule:</strong> Energy QLD (EQL) employers (e.g., Ergon, Energex) typically fund the cost of <strong>5 Units</strong> of default cover [1]. Set cover mode below to Unit-Based and 5 Units to simulate this plan.
+                </div>
+
                 <div class="control-group">
                     <label for="input-age">Current Age (15-69)</label>
                     <input type="number" id="input-age" value="35" min="15" max="69" onchange="runSandboxCalculations()">
                 </div>
 
                 <div class="control-group">
+                    <label for="brighter-cover-mode">Brighter Cover Mode</label>
+                    <select id="brighter-cover-mode" onchange="toggleCoverMode()">
+                        <option value="unit" selected>Unit-Based (Default) [1]</option>
+                        <option value="fixed">Fixed-Dollar [1]</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="brighter-units-group">
+                    <label for="brighter-unit-count">Brighter Cover Units</label>
+                    <select id="brighter-unit-count" onchange="runSandboxCalculations()">
+                        <option value="lifestage">Life-Stage Default (Varies by Age) [1]</option>
+                        <option value="1">1 Unit</option>
+                        <option value="2">2 Units</option>
+                        <option value="3">3 Units</option>
+                        <option value="4">4 Units</option>
+                        <option value="5" selected>5 Units (Default for EQL is 5 units) [1]</option>
+                        <option value="6">6 Units</option>
+                        <option value="7">7 Units</option>
+                        <option value="8">8 Units</option>
+                        <option value="9">9 Units</option>
+                        <option value="10">10 Units (Max Automatic Acceptance) [1]</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="death-sum-group">
                     <label for="input-death-sum">Desired Death Cover ($)</label>
                     <input type="number" id="input-death-sum" value="250000" min="0" step="10000" onchange="runSandboxCalculations()">
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" id="tpd-sum-group">
                     <label for="input-tpd-sum">Desired TPD Cover ($)</label>
                     <input type="number" id="input-tpd-sum" value="250000" min="0" step="10000" onchange="runSandboxCalculations()">
                 </div>
@@ -518,6 +577,15 @@
                 </div>
 
                 <div class="control-group">
+                    <label for="cbus-loyalty">Cbus Cover History (Loyalty Rebate)</label>
+                    <select id="cbus-loyalty" onchange="runSandboxCalculations()">
+                        <option value="0" selected>Held less than 10 years (0% Rebate)</option>
+                        <option value="0.02">First activated 10 to 19 years ago (2% Rebate)</option>
+                        <option value="0.04">First activated 20+ years ago (4% Rebate)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
                     <label for="ip-waiting-period">IP Waiting Period</label>
                     <select id="ip-waiting-period" onchange="runSandboxCalculations()">
                         <option value="30" selected>30 Days</option>
@@ -538,23 +606,26 @@
             <div class="results-panel">
                 <div class="results-row">
                     <!-- Brighter Super calculation output card -->
-                    <div class="cost-card brighter-theme" style="border-top: 5px solid var(--accent-brighter);">
+                    <div class="cost-card brighter-theme">
                         <h3 style="color: var(--accent-brighter); font-weight: 700;">Brighter Super Premium</h3>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Weekly Cost</p>
                         <div class="cost-val brighter" id="brighter-weekly-total">$0.00</div>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Monthly: <strong id="brighter-monthly-total">$0.00</strong></p>
                         
                         <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left;">
-                            <div class="footnote"><strong>Death/TPD Cover Basis:</strong> Fixed Dollar [1]</div>
-                            <div class="footnote"><strong>Death Rate (per $1k p.a.):</strong> <span id="brighter-death-rate">0.00</span></div>
-                            <div class="footnote"><strong>TPD Rate (per $1k p.a.):</strong> <span id="brighter-tpd-rate">0.00</span></div>
-                            <div class="footnote"><strong>IP Rate (per unit wk):</strong> <span id="brighter-ip-unit-cost">$1.688</span></div>
-                            <div class="footnote"><strong>Admin Rebate Applied:</strong> 7% discount already factored into results [1].</div>
+                            <div class="footnote"><strong>Death/TPD Cover Basis:</strong> <span id="brighter-basis">Unit-Based (Default)</span></div>
+                            <div class="footnote" id="brighter-unit-count-row"><strong>Cover Units Applied:</strong> <span id="brighter-units">0</span> (<span id="brighter-unit-val">$0</span> per unit [1])</div>
+                            <div class="footnote"><strong>Effective Death & TPD Cover:</strong> <strong id="brighter-calc-cover">$0</strong> [1]</div>
+                            <div class="footnote" id="brighter-rate-row"><strong>Annual Rate (per $1k):</strong> <span id="brighter-death-rate">0.00</span></div>
+                            <div class="footnote"><strong>IP Rate (per unit wk):</strong> <span id="brighter-ip-unit-cost">$1.688</span> [1]</div>
+                            <div class="footnote" style="background-color: var(--success-bg); padding: 5px; border-radius: 4px; color: var(--success); font-weight: 600;">
+                                Admin Rebate Applied: 7% reduction factored into final cost [1].
+                            </div>
                         </div>
                     </div>
 
                     <!-- Cbus Super calculation output card -->
-                    <div class="cost-card cbus-theme" style="border-top: 5px solid var(--accent-cbus);">
+                    <div class="cost-card cbus-theme">
                         <h3 style="color: var(--accent-cbus); font-weight: 700;">Cbus Super Premium</h3>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Estimated Weekly Cost</p>
                         <div class="cost-val cbus" id="cbus-weekly-total">$0.00</div>
@@ -562,10 +633,15 @@
 
                         <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left;">
                             <div class="footnote"><strong>Death Cover Basis:</strong> Unit-based [2]</div>
-                            <div class="footnote"><strong>Calculated Death Units Needed:</strong> <span id="cbus-death-units">0</span> (<span id="cbus-death-unit-val">$0</span> per unit [2])</div>
-                            <div class="footnote"><strong>Calculated TPD Units Needed:</strong> <span id="cbus-tpd-units">0</span> (<span id="cbus-tpd-unit-val">$0</span> per unit [2])</div>
+                            <div class="footnote" id="cbus-tpd-ceased-warning" style="display: none; background-color: var(--danger-bg); padding: 5px; border-radius: 4px; color: var(--danger); font-weight: 600;">
+                                TPD Cover Ceased: Member is 65+ (Default units are 0) [2].
+                            </div>
+                            <div class="footnote"><strong>Death Units to Match Brighter:</strong> <strong id="cbus-death-units">0</strong> (<span id="cbus-death-unit-val">$0</span> per unit [2])</div>
+                            <div class="footnote"><strong>TPD Units to Match Brighter:</strong> <strong id="cbus-tpd-units">0</strong> (<span id="cbus-tpd-unit-val">$0</span> per unit [2])</div>
                             <div class="footnote"><strong>IP Rate (per $100/wk unit):</strong> <span id="cbus-ip-unit-cost">$0.00</span> [2]</div>
-                            <div class="footnote"><strong>Loyalty Rebate:</strong> Factored automatically depending on history rules [2].</div>
+                            <div class="footnote" id="cbus-loyalty-display" style="background-color: var(--success-bg); padding: 5px; border-radius: 4px; color: var(--success); font-weight: 600;">
+                                Loyalty Rebate Applied: 0% reduction.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -574,9 +650,15 @@
                 <div class="card" style="background-color: var(--primary-light);">
                     <h4 style="font-weight: 700; margin-bottom: 8px; font-size: 0.95rem;">Sandbox Calculations Methodology:</h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.45;">
-                        <strong>Brighter Super:</strong> Evaluated using the standard Fixed-dollar tables (Page 13) [1]. Under Brighter Super rules, TPD and Death are packaged into a combined "Death & TPD" rate [1]. TPD cover is capped at or below the Death cover amount [1]. Cost calculations apply the mandatory 7% administration rebate [1].
+                        <strong>Brighter Super Cover Mode:</strong>
+                        <br>
+                        • <em>Unit-Based:</em> Evaluated using standard Life-stage defaults or manual unit counts [1]. Cover values are mapped based on age next birthday (Page 10) [1]. Standard Blue Collar cost is $1.459/week per unit, and White Collar is $1.179/week per unit [1].
+                        <br>
+                        • <em>Fixed-Dollar:</em> Evaluated based on custom sums insured entered, multiplying by Brighter's per-$1,000 premium rate tables (Page 13) [1].
                         <br><br>
-                        <strong>Cbus Super:</strong> Cover in Cbus is inherently structured as unit multiples [2]. The sandbox dynamically calculates unit requirements by dividing your requested sums insured by Cbus's age-specific unit definitions (Pages 20-25) [2] and rounding up to the nearest whole unit, which matches standard voluntary insurance application protocols [2].
+                        <strong>Cbus Super Matching Rule:</strong>
+                        <br>
+                        When Brighter Super is in <em>Unit-Based</em> mode, Cbus Super is configured to match the exact total sum insured provided by Brighter Super [1, 2]. Cbus's required units are calculated by dividing the Brighter total cover amount by Cbus's age-specific unit values and rounding up to the nearest whole unit [2]. Since portions of a unit are impossible, this ensures Cbus whole-unit cover matches or exceeds the Brighter baseline [2].
                     </p>
                 </div>
             </div>
@@ -751,6 +833,28 @@
             return { deathVal, deathCost, tpdVal, tpdCost };
         }
 
+        // Brighter Super Cover values per default unit based on Age next birthday [1]
+        function getBrighterUnitValue(ageNext) {
+            if (ageNext <= 30) return 108600;
+            const vals = {
+                31: 103400, 32: 98400, 33: 97300, 34: 97300, 35: 83000, 36: 77400, 37: 71700, 38: 66400, 39: 60800,
+                40: 55400, 41: 49400, 42: 44000, 43: 39200, 44: 34800, 45: 31000, 46: 27300, 47: 24000, 48: 21200,
+                49: 18600, 50: 16300, 51: 14100, 52: 12300, 53: 10700, 54: 9300, 55: 8000, 56: 7000, 57: 6300,
+                58: 5400, 59: 4800, 60: 4300, 61: 4000, 62: 3400, 63: 3200, 64: 3000, 65: 2700, 66: 2400,
+                67: 2100, 68: 2000, 69: 1900, 70: 1700
+            };
+            return vals[ageNext] || 1700;
+        }
+
+        // Brighter Default Units determination based on Age next birthday [1]
+        function getBrighterDefaultUnitsCount(ageNext) {
+            if (ageNext <= 25) return 1;
+            if (ageNext <= 29) return 2;
+            if (ageNext <= 34) return 3;
+            if (ageNext <= 39) return 4;
+            return 5;
+        }
+
         // Brighter Super Fixed Dollar Premium Rate lookup [1]
         function getBrighterFixedDollarRate(occ, isTpd, age) {
             const ageNext = Math.min(70, age + 1);
@@ -772,73 +876,153 @@
             }
         }
 
+        // Toggles interactive input states when changing Cover Mode
+        function toggleCoverMode() {
+            const mode = document.getElementById('brighter-cover-mode').value;
+            const deathInput = document.getElementById('input-death-sum');
+            const tpdInput = document.getElementById('input-tpd-sum');
+            const unitCountGroup = document.getElementById('brighter-units-group');
+
+            if (mode === 'unit') {
+                deathInput.disabled = true;
+                tpdInput.disabled = true;
+                unitCountGroup.style.display = 'block';
+                document.getElementById('brighter-unit-count-row').style.display = 'block';
+                document.getElementById('brighter-rate-row').style.display = 'none';
+                document.getElementById('brighter-basis').innerText = "Unit-Based (Symmetrical) [1]";
+            } else {
+                deathInput.disabled = false;
+                tpdInput.disabled = false;
+                unitCountGroup.style.display = 'none';
+                document.getElementById('brighter-unit-count-row').style.display = 'none';
+                document.getElementById('brighter-rate-row').style.display = 'block';
+                document.getElementById('brighter-basis').innerText = "Fixed-Dollar [1]";
+            }
+            runSandboxCalculations();
+        }
+
         // Core dynamic execution routine
         function runSandboxCalculations() {
             const age = parseInt(document.getElementById('input-age').value) || 30;
-            const deathSum = parseFloat(document.getElementById('input-death-sum').value) || 0;
-            const tpdSum = parseFloat(document.getElementById('input-tpd-sum').value) || 0;
-            const ipSum = parseFloat(document.getElementById('input-ip-sum').value) || 0;
-
+            const ageNext = Math.min(70, age + 1);
+            const brighterMode = document.getElementById('brighter-cover-mode').value;
+            
+            let deathSum = 0;
+            let tpdSum = 0;
+            
             const brighterOcc = document.getElementById('brighter-occ').value;
             const cbusOcc = document.getElementById('cbus-occ').value;
             const ipWaiting = document.getElementById('ip-waiting-period').value;
             const cbusBp = document.getElementById('ip-benefit-period').value;
+            const cbusLoyaltyRate = parseFloat(document.getElementById('cbus-loyalty').value) || 0;
+            const ipSum = parseFloat(document.getElementById('input-ip-sum').value) || 0;
+
+            let weeklyBDeathTPD = 0;
 
             // 1. BRIGHTER SUPER CALCULATIONS
-            // Rate evaluations based on PDS guidelines
-            let bDeathRate = getBrighterFixedDollarRate(brighterOcc, false, age);
-            let bTpdRate = getBrighterFixedDollarRate(brighterOcc, true, age);
+            if (brighterMode === 'unit') {
+                // Determine Units and default values
+                const unitCountValueSelected = document.getElementById('brighter-unit-count').value;
+                let bUnits = 5; // Fallback default
 
-            // Cost formula: annual premium divided by 52
-            let annualBDeath = (deathSum / 1000) * bDeathRate;
-            let annualBTpd = (tpdSum / 1000) * bTpdRate;
+                if (unitCountValueSelected === 'lifestage') {
+                    bUnits = getBrighterDefaultUnitsCount(ageNext);
+                } else {
+                    bUnits = parseInt(unitCountValueSelected);
+                }
 
-            // Apply age tapering warning if > 61
-            if (age >= 61) {
-                const factors = {62: 0.9, 63: 0.8, 64: 0.7, 65: 0.6, 66: 0.5, 67: 0.4, 68: 0.3, 69: 0.2, 70: 0.1};
-                let factor = factors[age] || 0.1;
-                annualBTpd = annualBTpd * factor;
+                const bUnitValue = getBrighterUnitValue(ageNext);
+                
+                // Cover limits under Unit-Based Mode
+                deathSum = bUnits * bUnitValue;
+                tpdSum = bUnits * bUnitValue;
+
+                // Sync deactivated input boxes for visualization
+                document.getElementById('input-death-sum').value = deathSum;
+                document.getElementById('input-tpd-sum').value = tpdSum;
+
+                // Lookup Flat Cost Per Unit per week (Combined Death and TPD)
+                const unitFlatCost = brighterOcc === 'blue_collar' ? 1.459 : 1.179;
+                weeklyBDeathTPD = bUnits * unitFlatCost;
+
+                // Update Brighter Detail outputs
+                document.getElementById('brighter-units').innerText = bUnits + (unitCountValueSelected === 'lifestage' ? ' (Life-Stage Default)' : '');
+                document.getElementById('brighter-unit-val').innerText = '$' + bUnitValue.toLocaleString();
+                document.getElementById('brighter-calc-cover').innerText = '$' + deathSum.toLocaleString();
+            } else {
+                // Manual/Fixed Cover mode
+                deathSum = parseFloat(document.getElementById('input-death-sum').value) || 0;
+                tpdSum = parseFloat(document.getElementById('input-tpd-sum').value) || 0;
+
+                let bDeathRate = getBrighterFixedDollarRate(brighterOcc, false, age);
+                let bTpdRate = getBrighterFixedDollarRate(brighterOcc, true, age);
+
+                let annualBDeath = (deathSum / 1000) * bDeathRate;
+                let annualBTpd = (tpdSum / 1000) * bTpdRate;
+
+                // Apply age tapering factor to Brighter TPD if >= 61
+                if (age >= 61) {
+                    const factors = {62: 0.9, 63: 0.8, 64: 0.7, 65: 0.6, 66: 0.5, 67: 0.4, 68: 0.3, 69: 0.2, 70: 0.1};
+                    let factor = factors[age] || 0.1;
+                    annualBTpd = annualBTpd * factor;
+                }
+
+                weeklyBDeathTPD = (annualBDeath + annualBTpd) / 52;
+
+                // Update Brighter Detail outputs
+                document.getElementById('brighter-calc-cover').innerText = '$' + Math.max(deathSum, tpdSum).toLocaleString();
+                document.getElementById('brighter-death-rate').innerText = bDeathRate.toFixed(4);
+                document.getElementById('brighter-tpd-rate').innerText = bTpdRate.toFixed(4);
             }
 
-            let weeklyBDeathTPD = (annualBDeath + annualBTpd) / 52;
-
-            // IP calculations
+            // IP calculations for Brighter
             let bIpUnitRate = 1.688; // Default 30 Days Standard
             if (ipWaiting === '90') {
                 bIpUnitRate = 1.009;
             }
             let bIpCost = (ipSum / 115.40) * bIpUnitRate;
             
-            // Total cost with 7% rebate offset
+            // Total cost with 7% rebate offset applied
             let brighterWeeklyTotal = (weeklyBDeathTPD + bIpCost) * 0.93;
             let brighterMonthlyTotal = brighterWeeklyTotal * (52 / 12);
 
             // Update DOM
             document.getElementById('brighter-weekly-total').innerText = '$' + brighterWeeklyTotal.toFixed(2);
             document.getElementById('brighter-monthly-total').innerText = '$' + brighterMonthlyTotal.toFixed(2);
-            document.getElementById('brighter-death-rate').innerText = bDeathRate.toFixed(4);
-            document.getElementById('brighter-tpd-rate').innerText = bTpdRate.toFixed(4);
             document.getElementById('brighter-ip-unit-cost').innerText = '$' + bIpUnitRate.toFixed(3);
 
 
-            // 2. CBUS SUPER CALCULATIONS
+            // 2. CBUS SUPER CALCULATIONS (MATCHING BRIGHTER WHOLE COVER AMOUNTS)
             const cbusUnits = getCbusUnitData(cbusOcc, age);
             
-            // Death Cover mapping
+            // Death Cover matching rule
             let cbusDeathUnits = 0;
             if (cbusUnits.deathVal > 0) {
+                // Must be whole units as any portion of a unit is not possible
                 cbusDeathUnits = Math.ceil(deathSum / cbusUnits.deathVal);
             }
             let cbusDeathWeekly = cbusDeathUnits * cbusUnits.deathCost;
 
-            // TPD Cover mapping
+            // TPD Cover matching rule with dynamic age-cutoff validation
             let cbusTpdUnits = 0;
-            if (cbusUnits.tpdVal > 0) {
-                cbusTpdUnits = Math.ceil(tpdSum / cbusUnits.tpdVal);
-            }
-            let cbusTpdWeekly = cbusTpdUnits * cbusUnits.tpdCost;
+            let cbusTpdWeekly = 0;
+            const tpdCeasedWarning = document.getElementById('cbus-tpd-ceased-warning');
 
-            // IP evaluations
+            if (age >= 65) {
+                // TPD cover ceases by default at age 65
+                cbusTpdUnits = 0;
+                cbusTpdWeekly = 0;
+                tpdCeasedWarning.style.display = 'block';
+            } else {
+                tpdCeasedWarning.style.display = 'none';
+                if (cbusUnits.tpdVal > 0) {
+                    // Must be whole units as any portion of a unit is not possible
+                    cbusTpdUnits = Math.ceil(tpdSum / cbusUnits.tpdVal);
+                }
+                cbusTpdWeekly = cbusTpdUnits * cbusUnits.tpdCost;
+            }
+
+            // IP calculations for Cbus
             let cbusMappedOcc = cbusOcc === 'electech' ? 'manual' : cbusOcc;
             let cbusIpIndex = getCbusIpAgeIndex(age);
             let cbusIpRateKey = 'wp' + ipWaiting;
@@ -847,7 +1031,13 @@
             let cbusIpUnits = Math.ceil(ipSum / 100);
             let cbusIpWeekly = cbusIpUnits * cbusIpUnitCost;
 
+            // Raw Cbus premium before loyalty rebate
             let cbusWeeklyTotal = cbusDeathWeekly + cbusTpdWeekly + cbusIpWeekly;
+            
+            // Apply Cbus Loyalty Rebate
+            let loyaltyDiscountApplied = cbusWeeklyTotal * cbusLoyaltyRate;
+            cbusWeeklyTotal = cbusWeeklyTotal - loyaltyDiscountApplied;
+            
             let cbusMonthlyTotal = cbusWeeklyTotal * (52 / 12);
 
             // Update DOM
@@ -858,7 +1048,16 @@
             document.getElementById('cbus-tpd-units').innerText = cbusTpdUnits;
             document.getElementById('cbus-tpd-unit-val').innerText = '$' + cbusUnits.tpdVal.toLocaleString();
             document.getElementById('cbus-ip-unit-cost').innerText = '$' + cbusIpUnitCost.toFixed(2);
+            
+            // Display applied rebate
+            let rebatePercentText = (cbusLoyaltyRate * 100) + '%';
+            document.getElementById('cbus-loyalty-display').innerText = `Loyalty Rebate Applied: ${rebatePercentText} reduction ($${loyaltyDiscountApplied.toFixed(2)}/wk).`;
         }
+
+        // Initialize state
+        window.onload = function() {
+            toggleCoverMode();
+        };
     </script>
 </body>
 </html>
