@@ -683,11 +683,11 @@
                             <div class="audit-box" style="border-color: var(--accent-cbus); background-color: #f8fafc;">
                                 <div class="audit-title" style="color: var(--accent-cbus);">Cbus Premium Breakdown:</div>
                                 <div class="footnote" style="margin:0; font-weight:600; color:var(--text-dark);">
-                                    • Death Cover: <strong id="cbus-death-units-display">0</strong> Units
+                                    • Death Cover: <strong id="cbus-death-units-display">0</strong> Units (Value: $<span id="cbus-death-unit-val">0</span> per unit [2])
                                     <br><span style="font-weight:normal; color:var(--text-muted); font-size:0.7rem; padding-left:10px;">= <span id="cbus-death-units-calc">0</span> units * $<span id="cbus-death-rate-calc">0.00</span> = $<span id="cbus-death-weekly-calc">0.00</span>/wk [2]</span>
                                 </div>
                                 <div class="footnote" style="margin:4px 0 0 0; font-weight:600; color:var(--text-dark);">
-                                    • TPD Cover: <strong id="cbus-tpd-units-display">0</strong> Units
+                                    • TPD Cover: <strong id="cbus-tpd-units-display">0</strong> Units (Value: $<span id="cbus-tpd-unit-val">0</span> per unit [2])
                                     <br><span style="font-weight:normal; color:var(--text-muted); font-size:0.7rem; padding-left:10px;">= <span id="cbus-tpd-units-calc">0</span> units * $<span id="cbus-tpd-rate-calc">0.00</span> = $<span id="cbus-tpd-weekly-calc">0.00</span>/wk [2]</span>
                                 </div>
                                 <div class="footnote" style="margin:8px 0 0 0; border-top:1px dashed #cbd5e1; padding-top:4px;">
@@ -740,6 +740,14 @@
             document.getElementById('tab-' + tabId).classList.add('active');
             if (tabId === 'sandbox') {
                 runSandboxCalculations();
+            }
+        }
+
+        // Safe DOM set text utility to prevent scripting exceptions
+        function safeSetText(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerText = value;
             }
         }
 
@@ -952,19 +960,27 @@
                 tpdInput.disabled = true;
                 unitCountGroup.style.display = 'block';
                 linkedBreakdown.style.display = 'none';
-                document.getElementById('brighter-unit-count-row').style.display = 'block';
-                document.getElementById('brighter-rate-row').style.display = 'none';
-                document.getElementById('brighter-basis').innerText = "Unit-Based (Symmetrical) [1]";
+                safeSetStyle('brighter-unit-count-row', 'display', 'block');
+                safeSetStyle('brighter-rate-row', 'display', 'none');
+                safeSetText('brighter-basis', "Unit-Based (Symmetrical) [1]");
             } else {
                 deathInput.disabled = false;
                 tpdInput.disabled = false;
                 unitCountGroup.style.display = 'none';
                 linkedBreakdown.style.display = 'block';
-                document.getElementById('brighter-unit-count-row').style.display = 'none';
-                document.getElementById('brighter-rate-row').style.display = 'none'; 
-                document.getElementById('brighter-basis').innerText = "Fixed-Dollar (Linked) [1]";
+                safeSetStyle('brighter-unit-count-row', 'display', 'none');
+                safeSetStyle('brighter-rate-row', 'display', 'none'); 
+                safeSetText('brighter-basis', "Fixed-Dollar (Linked) [1]");
             }
             runSandboxCalculations();
+        }
+
+        // Safe style modification helper
+        function safeSetStyle(id, property, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style[property] = value;
+            }
         }
 
         // Core dynamic execution routine
@@ -1012,10 +1028,10 @@
                 weeklyBDeathTPD = bUnits * unitFlatCost;
 
                 // Update Brighter Detail outputs
-                document.getElementById('brighter-units').innerText = bUnits + (unitCountValueSelected === 'lifestage' ? ' (Life-Stage Default)' : '');
-                document.getElementById('brighter-unit-val').innerText = '$' + bUnitValue.toLocaleString();
-                document.getElementById('brighter-calc-death-sum').innerText = '$' + deathSum.toLocaleString();
-                document.getElementById('brighter-calc-tpd-sum').innerText = '$' + tpdSum.toLocaleString();
+                safeSetText('brighter-units', bUnits + (unitCountValueSelected === 'lifestage' ? ' (Life-Stage Default)' : ''));
+                safeSetText('brighter-unit-val', '$' + bUnitValue.toLocaleString());
+                safeSetText('brighter-calc-death-sum', '$' + deathSum.toLocaleString());
+                safeSetText('brighter-calc-tpd-sum', '$' + tpdSum.toLocaleString());
             } else {
                 // Manual/Fixed Cover mode
                 deathSum = parseFloat(document.getElementById('input-death-sum').value) || 0;
@@ -1055,28 +1071,28 @@
                 let equivUnits = deathSum / bUnitValue;
 
                 // Update Brighter Detail outputs & audit linked fields [1]
-                document.getElementById('brighter-calc-death-sum').innerText = '$' + deathSum.toLocaleString();
-                document.getElementById('brighter-calc-tpd-sum').innerText = '$' + tpdSum.toLocaleString();
+                safeSetText('brighter-calc-death-sum', '$' + deathSum.toLocaleString());
+                safeSetText('brighter-calc-tpd-sum', '$' + tpdSum.toLocaleString());
                 
                 // Detailed Breakdown Widget Update
-                document.getElementById('brighter-linked-amt').innerText = tpdSum.toLocaleString();
-                document.getElementById('brighter-linked-amt2').innerText = tpdSum.toLocaleString();
-                document.getElementById('brighter-linked-rate').innerText = bTpdRate.toFixed(4);
-                document.getElementById('brighter-linked-rate2').innerText = bTpdRate.toFixed(4);
-                document.getElementById('brighter-linked-annual').innerText = annualBTpd.toFixed(2);
-                document.getElementById('brighter-linked-weekly').innerText = (annualBTpd / 52).toFixed(2);
+                safeSetText('brighter-linked-amt', tpdSum.toLocaleString());
+                safeSetText('brighter-linked-amt2', tpdSum.toLocaleString());
+                safeSetText('brighter-linked-rate', bTpdRate.toFixed(4));
+                safeSetText('brighter-linked-rate2', bTpdRate.toFixed(4));
+                safeSetText('brighter-linked-annual', annualBTpd.toFixed(2));
+                safeSetText('brighter-linked-weekly', (annualBTpd / 52).toFixed(2));
 
-                document.getElementById('brighter-excess-amt').innerText = excessDeathSum.toLocaleString();
-                document.getElementById('brighter-excess-amt2').innerText = excessDeathSum.toLocaleString();
-                document.getElementById('brighter-excess-rate').innerText = bDeathRate.toFixed(4);
-                document.getElementById('brighter-excess-rate2').innerText = bDeathRate.toFixed(4);
-                document.getElementById('brighter-excess-annual').innerText = annualBDeath.toFixed(2);
-                document.getElementById('brighter-excess-weekly').innerText = (annualBDeath / 52).toFixed(2);
+                safeSetText('brighter-excess-amt', excessDeathSum.toLocaleString());
+                safeSetText('brighter-excess-amt2', excessDeathSum.toLocaleString());
+                safeSetText('brighter-excess-rate', bDeathRate.toFixed(4));
+                safeSetText('brighter-excess-rate2', bDeathRate.toFixed(4));
+                safeSetText('brighter-excess-annual', annualBDeath.toFixed(2));
+                safeSetText('brighter-excess-weekly', (annualBDeath / 52).toFixed(2));
 
-                document.getElementById('brighter-gross-weekly').innerText = grossWeeklyTotal.toFixed(2);
-                document.getElementById('brighter-rebate-weekly').innerText = rebateAmountWeekly.toFixed(2);
-                document.getElementById('brighter-net-weekly').innerText = weeklyBDeathTPD.toFixed(2);
-                document.getElementById('brighter-equivalent-units').innerText = equivUnits.toFixed(2);
+                safeSetText('brighter-gross-weekly', grossWeeklyTotal.toFixed(2));
+                safeSetText('brighter-rebate-weekly', rebateAmountWeekly.toFixed(2));
+                safeSetText('brighter-net-weekly', weeklyBDeathTPD.toFixed(2));
+                safeSetText('brighter-equivalent-units', equivUnits.toFixed(2));
             }
 
             // IP calculations for Brighter
@@ -1091,9 +1107,9 @@
             let brighterMonthlyTotal = brighterWeeklyTotal * (52 / 12);
 
             // Update DOM
-            document.getElementById('brighter-weekly-total').innerText = '$' + brighterWeeklyTotal.toFixed(2);
-            document.getElementById('brighter-monthly-total').innerText = '$' + brighterMonthlyTotal.toFixed(2);
-            document.getElementById('brighter-ip-unit-cost').innerText = '$' + bIpUnitRate.toFixed(3);
+            safeSetText('brighter-weekly-total', '$' + brighterWeeklyTotal.toFixed(2));
+            safeSetText('brighter-monthly-total', '$' + brighterMonthlyTotal.toFixed(2));
+            safeSetText('brighter-ip-unit-cost', '$' + bIpUnitRate.toFixed(3));
 
 
             // 2. CBUS SUPER CALCULATIONS (MATCHING BRIGHTER WHOLE COVER AMOUNTS) [2]
@@ -1116,9 +1132,13 @@
                 // TPD cover ceases by default at age 65 [2]
                 cbusTpdUnits = 0;
                 cbusTpdWeekly = 0;
-                tpdCeasedWarning.style.display = 'block';
+                if (tpdCeasedWarning) {
+                    tpdCeasedWarning.style.display = 'block';
+                }
             } else {
-                tpdCeasedWarning.style.display = 'none';
+                if (tpdCeasedWarning) {
+                    tpdCeasedWarning.style.display = 'none';
+                }
                 if (cbusUnits.tpdVal > 0) {
                     // Must be whole units as any portion of a unit is not possible [2]
                     cbusTpdUnits = Math.ceil(tpdSum / cbusUnits.tpdVal);
@@ -1144,33 +1164,36 @@
             let cbusMonthlyTotal = cbusWeeklyTotal * (52 / 12);
 
             // Update DOM
-            document.getElementById('cbus-weekly-total').innerText = '$' + cbusWeeklyTotal.toFixed(2);
-            document.getElementById('cbus-monthly-total').innerText = '$' + cbusMonthlyTotal.toFixed(2);
+            safeSetText('cbus-weekly-total', '$' + cbusWeeklyTotal.toFixed(2));
+            safeSetText('cbus-monthly-total', '$' + cbusMonthlyTotal.toFixed(2));
             
             // CBUS Breakdown Audit Widget updates
-            document.getElementById('cbus-death-units').innerText = cbusDeathUnits;
-            document.getElementById('cbus-death-units-display').innerText = cbusDeathUnits;
-            document.getElementById('cbus-death-units-calc').innerText = cbusDeathUnits;
-            document.getElementById('cbus-death-unit-val').innerText = '$' + cbusUnits.deathVal.toLocaleString();
-            document.getElementById('cbus-death-rate-calc').innerText = cbusUnits.deathCost.toFixed(2);
-            document.getElementById('cbus-death-weekly-calc').innerText = cbusDeathWeekly.toFixed(2);
+            safeSetText('cbus-death-units', cbusDeathUnits);
+            safeSetText('cbus-death-units-display', cbusDeathUnits);
+            safeSetText('cbus-death-units-calc', cbusDeathUnits);
+            safeSetText('cbus-death-unit-val', cbusUnits.deathVal.toLocaleString());
+            safeSetText('cbus-death-rate-calc', cbusUnits.deathCost.toFixed(2));
+            safeSetText('cbus-death-weekly-calc', cbusDeathWeekly.toFixed(2));
 
-            document.getElementById('cbus-tpd-units').innerText = cbusTpdUnits;
-            document.getElementById('cbus-tpd-units-display').innerText = cbusTpdUnits;
-            document.getElementById('cbus-tpd-units-calc').innerText = cbusTpdUnits;
-            document.getElementById('cbus-tpd-unit-val').innerText = '$' + cbusUnits.tpdVal.toLocaleString();
-            document.getElementById('cbus-tpd-rate-calc').innerText = cbusUnits.tpdCost.toFixed(2);
-            document.getElementById('cbus-tpd-weekly-calc').innerText = cbusTpdWeekly.toFixed(2);
+            safeSetText('cbus-tpd-units', cbusTpdUnits);
+            safeSetText('cbus-tpd-units-display', cbusTpdUnits);
+            safeSetText('cbus-tpd-units-calc', cbusTpdUnits);
+            safeSetText('cbus-tpd-unit-val', cbusUnits.tpdVal.toLocaleString());
+            safeSetText('cbus-tpd-rate-calc', cbusUnits.tpdCost.toFixed(2));
+            safeSetText('cbus-tpd-weekly-calc', cbusTpdWeekly.toFixed(2));
 
-            document.getElementById('cbus-gross-weekly').innerText = cbusDeathTpdWeeklyGross.toFixed(2);
-            document.getElementById('cbus-loyalty-weekly').innerText = loyaltyDiscountApplied.toFixed(2);
-            document.getElementById('cbus-net-weekly').innerText = cbusDeathTpdWeeklyNet.toFixed(2);
+            safeSetText('cbus-gross-weekly', cbusDeathTpdWeeklyGross.toFixed(2));
+            safeSetText('cbus-loyalty-weekly', loyaltyDiscountApplied.toFixed(2));
+            safeSetText('cbus-net-weekly', cbusDeathTpdWeeklyNet.toFixed(2));
 
-            document.getElementById('cbus-ip-unit-cost').innerText = '$' + cbusIpUnitCost.toFixed(2);
+            safeSetText('cbus-ip-unit-cost', '$' + cbusIpUnitCost.toFixed(2));
             
             // Display applied rebate
             let rebatePercentText = (cbusLoyaltyRate * 100) + '%';
-            document.getElementById('cbus-loyalty-display').innerText = `Loyalty Rebate Applied: ${rebatePercentText} reduction ($${loyaltyDiscountApplied.toFixed(2)}/wk).`;
+            const cbusLoyaltyDisplayEl = document.getElementById('cbus-loyalty-display');
+            if (cbusLoyaltyDisplayEl) {
+                cbusLoyaltyDisplayEl.innerText = `Loyalty Rebate Applied: ${rebatePercentText} reduction ($${loyaltyDiscountApplied.toFixed(2)}/wk).`;
+            }
         }
 
         // Initialize state
